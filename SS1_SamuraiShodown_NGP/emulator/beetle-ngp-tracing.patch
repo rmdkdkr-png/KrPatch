@@ -1,0 +1,150 @@
+diff --git a/mednafen/ngp/TLCS-900h/TLCS900h_interpret.c b/mednafen/ngp/TLCS-900h/TLCS900h_interpret.c
+index 574899c..a35a9d5 100644
+--- a/mednafen/ngp/TLCS-900h/TLCS900h_interpret.c
++++ b/mednafen/ngp/TLCS-900h/TLCS900h_interpret.c
+@@ -1043,9 +1043,34 @@ static void (*decode[256])(void) =
+ 
+ //=============================================================================
+ 
++
++/* ---- 명령어 트레이서 (SS1 세션 추가) ---- */
++#include "TLCS900h_registers.h"
++static uint32 dbg_ilo = 0, dbg_ihi = 0;
++#define DBG_IMAX 65536
++static uint32 dbg_ilog[DBG_IMAX][10];
++static uint32 dbg_ilog_n = 0;
++void retro_dbg_iwatch(uint32 lo, uint32 hi) { dbg_ilo = lo; dbg_ihi = hi; dbg_ilog_n = 0; }
++uint32 retro_dbg_ilog_count(void) { return dbg_ilog_n; }
++uint32 retro_dbg_ilog_get(uint32 i, uint32 f) { return (i < dbg_ilog_n && f < 10) ? dbg_ilog[i][f] : 0; }
++static void dbg_itrace(void)
++{
++   if (dbg_ihi && pc >= dbg_ilo && pc < dbg_ihi && dbg_ilog_n < DBG_IMAX)
++   {
++      uint32 *e = dbg_ilog[dbg_ilog_n++];
++      e[0] = pc;
++      e[1] = gprBank[statusRFP][0]; e[2] = gprBank[statusRFP][1];
++      e[3] = gprBank[statusRFP][2]; e[4] = gprBank[statusRFP][3];
++      e[5] = gpr[0]; e[6] = gpr[1]; e[7] = gpr[2]; e[8] = gpr[3];
++      e[9] = 0;
++   }
++}
++/* ---- 트레이서 끝 ---- */
++
+ int32 TLCS900h_interpret(void)
+ {
+ 	brCode = false;
++	dbg_itrace();
+ 	first  = FETCH8;	//Get the first byte
+ 	//Is any extra data used by this instruction?
+ 	cycles_extra = 0;
+diff --git a/mednafen/ngp/mem.c b/mednafen/ngp/mem.c
+index 85a902a..90b00be 100644
+--- a/mednafen/ngp/mem.c
++++ b/mednafen/ngp/mem.c
+@@ -32,7 +32,73 @@
+ 
+ /* Hack way of returning good Flash status. */
+ bool FlashStatusEnable = false;
+-static uint32 FlashStatus;	
++static uint32 FlashStatus;
++
++/* ---- 디버그 트레이스 훅 (SS1 한글화 세션에서 추가) ---- */
++static uint32 dbg_watch_lo = 0, dbg_watch_hi = 0; /* CPU 주소, hi==0이면 꺼짐 */
++#define DBG_MAX 262144
++static uint32 dbg_log_pc[DBG_MAX];
++static uint32 dbg_log_ad[DBG_MAX];
++static uint32 dbg_log_n = 0;
++
++static void dbg_check(uint32 address)
++{
++   if (dbg_watch_hi && address >= dbg_watch_lo && address < dbg_watch_hi
++       && dbg_log_n < DBG_MAX)
++   {
++      dbg_log_pc[dbg_log_n] = pc;
++      dbg_log_ad[dbg_log_n] = address;
++      dbg_log_n++;
++   }
++}
++
++void retro_dbg_watch(uint32 lo, uint32 hi)
++{
++   dbg_watch_lo = lo; dbg_watch_hi = hi; dbg_log_n = 0;
++}
++
++uint32 retro_dbg_log_count(void) { return dbg_log_n; }
++
++uint32 retro_dbg_log_pc(uint32 i) { return (i < dbg_log_n) ? dbg_log_pc[i] : 0; }
++uint32 retro_dbg_log_ad(uint32 i) { return (i < dbg_log_n) ? dbg_log_ad[i] : 0; }
++
++uint8_t loadB(uint32 address);
++uint8_t retro_dbg_peek(uint32 address) { return loadB(address & 0xFFFFFF); }
++
++void retro_dbg_peek_block(uint32 address, uint32 len, uint8_t *out)
++{
++   uint32 i;
++   for (i = 0; i < len; i++)
++      out[i] = loadB((address + i) & 0xFFFFFF);
++}
++
++/* 쓰기 감시 */
++static uint32 dbg_wlo = 0, dbg_whi = 0;
++static uint32 dbg_wlog_pc[DBG_MAX];
++static uint32 dbg_wlog_ad[DBG_MAX];
++static uint8_t dbg_wlog_v[DBG_MAX];
++static uint32 dbg_wlog_n = 0;
++
++static void dbg_wcheck(uint32 address, uint8_t v)
++{
++   if (dbg_whi && address >= dbg_wlo && address < dbg_whi && dbg_wlog_n < DBG_MAX)
++   {
++      dbg_wlog_pc[dbg_wlog_n] = pc;
++      dbg_wlog_ad[dbg_wlog_n] = address;
++      dbg_wlog_v[dbg_wlog_n] = v;
++      dbg_wlog_n++;
++   }
++}
++
++void retro_dbg_wwatch(uint32 lo, uint32 hi) { dbg_wlo = lo; dbg_whi = hi; dbg_wlog_n = 0; }
++uint32 retro_dbg_wlog_count(void) { return dbg_wlog_n; }
++uint32 retro_dbg_wlog_pc(uint32 i) { return (i < dbg_wlog_n) ? dbg_wlog_pc[i] : 0; }
++uint32 retro_dbg_wlog_ad(uint32 i) { return (i < dbg_wlog_n) ? dbg_wlog_ad[i] : 0; }
++uint32 retro_dbg_wlog_v(uint32 i)  { return (i < dbg_wlog_n) ? dbg_wlog_v[i] : 0; }
++
++void storeB(uint32 address, uint8_t data);
++void retro_dbg_poke(uint32 address, uint8_t v) { storeB(address & 0xFFFFFF, v); }
++/* ---- 훅 끝 ---- */
+ 
+ uint8_t CPUExRAM[16384];
+ 
+@@ -190,6 +256,7 @@ uint8_t loadB(uint32 address)
+ {
+    uint8_t *ptr;
+    address &= 0xFFFFFF;
++   dbg_check(address);
+ 
+    if(FastReadMap[address >> 16])
+       return(FastReadMap[address >> 16][address]);
+@@ -229,6 +296,7 @@ uint16_t loadW(uint32 address)
+ {
+    uint16_t* ptr;
+    address &= 0xFFFFFF;
++   if(!(address & 1)) { dbg_check(address); dbg_check(address+1); }
+ 
+    if(address & 1)
+    {
+@@ -315,6 +383,7 @@ void storeB(uint32 address, uint8_t data)
+ {
+    uint8_t* ptr;
+    address &= 0xFFFFFF;
++   dbg_wcheck(address, data);
+ 
+    if(address >= 0x8000 && address <= 0xbfff)
+    {
+@@ -396,6 +465,7 @@ void storeW(uint32 address, uint16_t data)
+ {
+    uint16_t* ptr;
+    address &= 0xFFFFFF;
++   if(!(address & 1)) { dbg_wcheck(address, data & 0xFF); dbg_wcheck(address+1, data >> 8); }
+ 
+    if(address & 1)
+    {
