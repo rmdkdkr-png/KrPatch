@@ -78,7 +78,8 @@ def headline_art(text, font, w, h, gap=2):
             d |= np.roll(np.roll(m, dy, 0), dx, 1)
     out[d & ~m] = LINE                       # 남색 외곽선
     out[m] = FILL                            # 크림 획
-    out[m & ~np.roll(m, -1, 0)] = SHADE      # 획 아래 1px 분홍 음영 (원판과 같은 처리)
+    # 원판은 획 아래에 분홍 음영이 있지만, 20px 한글에 그걸 넣으면 획이 흐려져 오히려 안 읽힌다.
+    # 크림/남색 2톤이 이 크기에서 가장 선명하다.
     return out
 
 
