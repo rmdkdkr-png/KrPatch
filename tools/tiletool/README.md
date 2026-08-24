@@ -56,7 +56,7 @@ SS2 기록 16화면의 타일 1,159개 중 **937개(80.8%)가 정적 스캔 창 
 | `regress.py` | 두 롬으로 기록을 오프라인 재렌더해 픽셀 비교 + 차이 이미지 |
 | `ladder.py` | 한 화면을 여러 판으로 나란히 재렌더 (버전 사다리) |
 | `coverage.py` | 화면에 실제로 뜬 타일 주소 요약 · 정적 스캔 창 사각지대 산출 |
-| `diffmap.py` | **아직 원본 그대로인 타일**을 가려낸다 — 미번역 작업 목록이 그대로 나온다 |
+| `diffmap.py` | **아직 원본 그대로인 타일**을 가려낸다. `--lines`는 그것이 화면에서 가로로 이어진 줄을 그림으로 뽑아 준다 — 미번역 작업 목록이 그대로 나온다 |
 | `hunt.py` | 경로로 못 가는 화면을 목표 기록 대조로 자동 추적해 세이브스테이트를 잡는다 |
 | `tilemap.py` | 관측·재렌더 코어 |
 | `ngp_vram.py` | VRAM 포맷 역산 연구 코드 (`fit_format`) |
@@ -76,7 +76,7 @@ python3 ladder.py rec_ss2/최종장타이틀.json out.png v0.63.ngc v0.95.ngc v0
 python3 coverage.py rec_ss2/ --window 1D0000:200000 --list
 
 # 5) 미번역 잔여 타일 — 원본 롬과 대조
-python3 diffmap.py rec_svc/ 원본.ngc 한글판.ngc 지도/ --csv 남은것.csv
+python3 diffmap.py rec_svc/ 원본.ngc 한글판.ngc 지도/ --csv 남은것.csv --lines 줄/
 ```
 
 필요한 것: `numpy`, `pillow`. 기록 단계만 추가로 트레이싱 패치를 얹은 beetle-ngp 코어가 필요하다
@@ -139,9 +139,20 @@ SNK vs Capcom MotM 한글판 v17.2를 조작 경로 9화면으로 관측하고, 
 
 타이틀 「頂上決戦 最強ファイターズ」와 「Aボタンを おし ください」, 그리고
 `MAIN MENU` · `GAME SELECT` · `STYLE SELECT` · `PLAYER SELECT` 머리글이 전부 원본 그대로다.
-`--csv`가 그 타일 주소를 화면별로 뽑아 준다 — **타일 이름 풀한글화의 작업 목록**이 그대로 나온다.
+`--lines`가 그 타일이 **화면에서 가로로 이어진 줄**을 그림으로 뽑아 준다 (배경 채움은 걸러낸다).
+100줄이 나왔고, 그 안에 `PLAYER SELECT` 머리글·`KYO` 이름판·`VS` 아이콘·타이틀 로고가 그대로 보인다.
+
+![SVC 잔여 줄](verify_svc_lines.png)
+
+**타일 이름 풀한글화의 작업 목록**이 이걸로 나온다. 정리한 것은 [`docs/SVC_잔여타일.md`](../../docs/SVC_잔여타일.md).
 
 참고로 같은 방식으로 잰 SS2 v0.99b는 1,159개 중 **321개가 새 타일(28%)**, SVC v17.2는 2.6%다.
+
+## 라스트블레이드
+
+`screens_lb.json` · `rec_lb/` — 한글판 v1.2를 조작 경로 9화면으로 관측했다 (고유 타일 536개).
+**원본 롬이 없어 잔여 판정(`diffmap.py`)은 못 돌렸다.** 눈으로 본 범위에서는 타이틀·메뉴가 한글이고
+모드 선택(`STORY MODE` / `SURVIVAL` / `TIME ATTACK` / `TRAINING`)이 영문으로 남아 있다.
 
 ## 한계 (정직하게)
 

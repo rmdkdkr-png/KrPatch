@@ -53,8 +53,11 @@ def main(argv=None):
     ap.add_argument('orig')
     ap.add_argument('kr')
     ap.add_argument('outdir', nargs='?', default=None)
-    ap.add_argument('--plane', type=int, choices=(1, 2), default=1)
+    ap.add_argument('--plane', type=int, choices=(0, 1, 2), default=1, help='0이면 두 평면 모두')
     ap.add_argument('--csv', default=None)
+    ap.add_argument('--lines', default=None,
+                    help='원본 잔여 타일이 **화면에서 가로로 이어진 줄**을 그림으로 뽑는다 (작업 목록)')
+    ap.add_argument('--min-run', type=int, default=3, help='줄로 뽑을 최소 타일 수')
     a = ap.parse_args(argv)
 
     with open(a.orig, 'rb') as f:
@@ -87,6 +90,44 @@ def main(argv=None):
 
     print('-' * 36)
     print('%-14s %6d %6d %6d' % ('합계(고유)', len(tot_all), len(tot_all) - len(tot_keep), len(tot_keep)))
+
+    if a.lines:
+        from PIL import Image
+        os.makedirs(a.lines, exist_ok=True)
+        blank = b'\0' * 16
+        found = []
+        for name, maps, s2r in TM.load_records(a.recdir):
+            untouched = {s for s, ad in s2r.items()
+                         if hash(K[ad:ad + 16]) in orig_content
+                         and K[ad:ad + 16] != blank}
+            tiles = TM.tiles_from_rom(K, s2r)
+            planes = (1, 2) if a.plane == 0 else (a.plane,)
+            for plane in planes:
+                m = maps[plane]
+                for r in range(32):
+                    run = []
+                    for c in range(33):
+                        s = int(m[r, c]) & TM.PAT_MASK if c < 32 else -1
+                        if s in untouched:
+                            run.append(s)
+                            continue
+                        # 32칸 통줄이나 같은 타일 반복은 배경 채움이라 글자가 아니다
+                        if a.min_run <= len(run) < 32 and len(set(run)) >= 3:
+                            found.append((name, plane, r, c - len(run), run,
+                                          tiles, [s2r[x] for x in run]))
+                        run = []
+        found.sort(key=lambda t: -len(t[4]))
+        print('\n화면에서 가로 %d타일 이상 이어진 원본 잔여 줄 %d개 -> %s'
+              % (a.min_run, len(found), a.lines))
+        for i, (name, plane, r, c0, run, tiles, ads) in enumerate(found):
+            img = np.zeros((8, 8 * len(run), 3), np.uint8)
+            for j, s in enumerate(run):
+                img[:, j * 8:j * 8 + 8] = TM.GRAY[tiles[s]]
+            Image.fromarray(img).save(os.path.join(
+                a.lines, '%03d_%s_p%d_r%02d_x%d.png' % (i, name, plane, r, len(run))))
+        for name, plane, r, c0, run, _, ads in found[:15]:
+            print('  %-12s SCR%d 행%2d 열%2d  %2d타일  0x%06X~0x%06X'
+                  % (name, plane, r, c0, len(run), min(ads), max(ads)))
     if a.csv:
         with open(a.csv, 'w') as f:
             f.write('screen,slot,rom_addr\n')
