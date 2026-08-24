@@ -1,0 +1,8 @@
+[
+ {"name":"타이틀메뉴",   "sav":"v95_menu.sav", "steps":[["B",90]]},
+ {"name":"캐릭선택",     "sav":"v95_menu.sav", "steps":[["B",90],["B",160]]},
+ {"name":"유파선택",     "sav":"v95_menu.sav", "steps":[["B",90],["B",160],["B",130]]},
+ {"name":"서장타이틀",   "sav":"chap0.sav",    "steps":[["B",85],["B",85]]},
+ {"name":"최종장타이틀", "sav":"pre_00.sav",   "steps":[["B",120]]},
+ {"name":"전투",         "sav":"duel.sav",     "steps":[["run",60]]}
+]
