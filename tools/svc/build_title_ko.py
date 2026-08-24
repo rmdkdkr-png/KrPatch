@@ -7,6 +7,7 @@
 무엇을 고치나
   1) 머리글 「頂上決戦」 -> 「정상결전」   타일맵 평면(SCR1) 32타일
   2) 안내문 「Aボタンを おし くださ」 -> 「A버튼을 눌러 주세요」  스프라이트 12타일
+     (원판 문구는 v17.2 에서 이미 「ください」의 「い」가 잘려 있다)
 
 조사 근거는 docs/SVC_잔여타일.md, 화면 기록은 tools/tiletool/rec_svc/타이틀.json.
 
@@ -81,17 +82,21 @@ def headline_art(text, font, w, h, gap=2):
     return out
 
 
-CAUTION_PPEM = 8       # Galmuri7 은 ppem 8 에서 한글이 7x7 로 제대로 떨어진다 (7 이면 6x6 로 뭉갠다)
+CAUTION_PPEM = 9       # Galmuri9 를 ppem 9 로 그리면 한글이 8x8 을 꽉 채운다
+CAUTION_DY = -1        # 그 크기에서 잉크가 y1~8 이라 한 줄 올려야 8행에 들어간다
 
 
 def caution_tile(ch, font7, shadow=False):
-    """8x8 한 칸. 글자마다 bbox 로 자르면 기준선이 어긋나므로 **고정 원점**으로 그린다."""
+    """8x8 한 칸. 글자마다 bbox 로 자르면 기준선이 어긋나므로 **고정 원점**으로 그린다.
+
+    Galmuri7(7x7)은 이 크기에서 「을」이 「슬」로 보일 만큼 뭉갠다. 8x8 을 다 쓰는 편이 낫다.
+    """
     t = np.zeros((8, 8), np.uint8)
     if ch is None:
         return t
     f = ImageFont.truetype(font7, CAUTION_PPEM)
     im = Image.new('L', (16, 16), 0)
-    ImageDraw.Draw(im).text((0, 0), ch, font=f, fill=255)
+    ImageDraw.Draw(im).text((0, CAUTION_DY), ch, font=f, fill=255)
     m = np.zeros((8, 8), bool)
     m[:] = (np.array(im) > 127)[:8, :8]
     if shadow:
@@ -117,7 +122,7 @@ def main(argv=None):
     ap.add_argument('rom')
     ap.add_argument('out')
     ap.add_argument('--font', default='Galmuri11-Bold.ttf', help='머리글용 (11px 픽셀 글꼴)')
-    ap.add_argument('--font7', default='Galmuri7.ttf', help='안내문용 (7px 픽셀 글꼴)')
+    ap.add_argument('--font7', default='Galmuri9.ttf', help='안내문용 (8x8 칸을 채우는 픽셀 글꼴)')
     ap.add_argument('--head', default='정상결전')
     ap.add_argument('--ips', default=None)
     ap.add_argument('--shadow', action='store_true', help='안내문에 원판식 그림자 넣기')

@@ -124,11 +124,21 @@ def tiles_from_rom(rom, slot2rom):
     return T
 
 
-def save_record(path, name, maps, slot2rom):
+SCROLL_REG = {1: (0x8032, 0x8033), 2: (0x8034, 0x8035)}
+
+
+def scroll_of(vram):
+    """{평면: (x, y)} — 타일맵의 어느 부분이 화면에 뜨는지."""
+    return {p: (vram[x - VRAM_BASE], vram[y - VRAM_BASE]) for p, (x, y) in SCROLL_REG.items()}
+
+
+def save_record(path, name, maps, slot2rom, scroll=None):
     os.makedirs(path, exist_ok=True)
     rec = {'name': name,
            'scr1': maps[1].tolist(), 'scr2': maps[2].tolist(),
            'slot2rom': {str(k): v for k, v in slot2rom.items()}}
+    if scroll:
+        rec['scroll'] = {str(p): list(v) for p, v in scroll.items()}
     with open(os.path.join(path, name + '.json'), 'w') as f:
         json.dump(rec, f)
 
@@ -139,6 +149,20 @@ def load_record(fp):
     maps = {1: np.array(r['scr1'], np.uint16), 2: np.array(r['scr2'], np.uint16)}
     slot2rom = {int(k): v for k, v in r['slot2rom'].items()}
     return r['name'], maps, slot2rom
+
+
+def scroll_from(fp):
+    """기록의 스크롤 값. 옛 기록(스크롤 없음)이면 (0,0)."""
+    with open(fp) as f:
+        r = json.load(f)
+    s = r.get('scroll') or {}
+    return {p: tuple(s.get(str(p), (0, 0))) for p in (1, 2)}
+
+
+def screen_cell(plane_map, scroll, r, c):
+    """화면 칸(r,c) -> 타일맵 칸. 스크롤은 픽셀 단위라 8로 나눠 쓴다."""
+    sx, sy = scroll
+    return (r + sy // 8) % MAPH, (c + sx // 8) % MAPW
 
 
 def load_records(recdir):

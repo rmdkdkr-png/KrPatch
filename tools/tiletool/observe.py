@@ -58,7 +58,7 @@ def run(rom_path, outdir, screens, sav_dir='', core=None, dump_states=None, shot
         walk(n, s.get('route') or s.get('steps') or [])
         v = TM.dump_vram(n)
         maps, s2r = TM.observe(v, idx)
-        TM.save_record(outdir, s['name'], maps, s2r)
+        TM.save_record(outdir, s['name'], maps, s2r, TM.scroll_of(v))
         if dump_states:
             os.makedirs(dump_states, exist_ok=True)
             n.save_state(os.path.join(dump_states, s['name'] + '.sav'))
