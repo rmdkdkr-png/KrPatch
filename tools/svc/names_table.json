@@ -1,0 +1,147 @@
+[
+ {
+  "name": "KYO",
+  "start": "0x32AB40",
+  "W": 6,
+  "col": 7,
+  "ko": "쿄",
+  "state": "확인"
+ },
+ {
+  "name": "TERRY",
+  "start": "0x32ABF0",
+  "W": 9,
+  "col": 5,
+  "ko": "테리",
+  "state": "확인",
+  "note": "번호 심기로 확정 — 열5~13. 표 초안의 0x32AC00 은 한 타일 밀린 값이었다"
+ },
+ {
+  "name": "RYO",
+  "start": "0x32AD00",
+  "W": 6,
+  "col": 7,
+  "ko": "료",
+  "state": "확인"
+ },
+ {
+  "name": "MAI",
+  "start": "0x32ADC0",
+  "W": 5,
+  "col": 7,
+  "ko": "마이",
+  "state": "보류"
+ },
+ {
+  "name": "LEONA",
+  "start": "0x32AE60",
+  "W": 9,
+  "col": 5,
+  "ko": "레오나",
+  "state": "확인"
+ },
+ {
+  "name": "ATHENA",
+  "start": "0x32AF80",
+  "W": 9,
+  "col": 5,
+  "ko": "아테나",
+  "state": "확인"
+ },
+ {
+  "name": "IORI",
+  "start": "0x32B0A0",
+  "W": 6,
+  "col": 7,
+  "ko": "이오리",
+  "state": "보류"
+ },
+ {
+  "name": "HAOHMARU",
+  "start": "0x32B150",
+  "W": 10,
+  "col": 5,
+  "ko": "하오마루",
+  "state": "확인"
+ },
+ {
+  "name": "NAKORURU",
+  "start": "0x32B290",
+  "W": 10,
+  "col": 5,
+  "ko": "나코루루",
+  "state": "확인"
+ },
+ {
+  "name": "RYU",
+  "start": "0x32B3E0",
+  "W": 6,
+  "col": 7,
+  "ko": "류",
+  "state": "확인"
+ },
+ {
+  "name": "CHUN-LI",
+  "start": "0x32B480",
+  "W": 9,
+  "col": 5,
+  "ko": "춘리",
+  "state": "확인"
+ },
+ {
+  "name": "ZANGIEF",
+  "start": "0x32B5A0",
+  "W": 9,
+  "col": 5,
+  "ko": "장기에프",
+  "state": "보류"
+ },
+ {
+  "name": "KEN",
+  "start": "0x32B6C0",
+  "W": 6,
+  "col": 7,
+  "ko": "켄",
+  "state": "확인"
+ },
+ {
+  "name": "DAN",
+  "start": "0x32B780",
+  "W": 6,
+  "col": 7,
+  "ko": "단",
+  "state": "확인"
+ },
+ {
+  "name": "SAKURA",
+  "start": "0x32B830",
+  "W": 9,
+  "col": 5,
+  "ko": "사쿠라",
+  "state": "확인"
+ },
+ {
+  "name": "MORRIGAN",
+  "start": "0x32B950",
+  "W": 10,
+  "col": 5,
+  "ko": "모리건",
+  "state": "확인"
+ },
+ {
+  "name": "FELICIA",
+  "start": "0x32BA90",
+  "W": 8,
+  "col": 5,
+  "ko": "펠리시아",
+  "state": "보류"
+ },
+ {
+  "name": "GUILE",
+  "start": "0x32BB90",
+  "W": 8,
+  "col": 5,
+  "ko": "가일",
+  "state": "확인"
+ }
+]

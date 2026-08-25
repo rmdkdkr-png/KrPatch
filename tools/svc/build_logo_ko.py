@@ -42,7 +42,13 @@ ROWS = list(range(4, 11))
 COLS = list(range(2, 18))
 W, H = len(COLS) * 8, len(ROWS) * 8      # 128 x 56
 ORANGE, RED, LINE = 1, 2, 3
-LINES = [('최강 파이터즈', 2, 4)]   # (글자들, 가로배수, 세로배수). 빈칸은 띄어쓰기
+# (글자들, 가로배수, 세로배수). 빈칸은 띄어쓰기.
+#
+# **등방 배율로 두 줄.** 한 줄로 가로2배·세로4배를 썼더니 한글이 가로 막대로 뭉갰다 —
+# 「즈」가 「王」처럼 되고 6음절이 128px 를 꽉 채워 좌우가 잘렸다.
+# 영역이 128x48 이라 Galmuri11-Bold(11px) 등방 2배 = 22x22 로 두 줄이 정확히 들어간다
+# (22 + 3 + 22 = 47). 원판도 「最強」과 「ファイターズ」 두 덩어리라 위계가 맞는다.
+LINES = [('최강', 2, 2), ('파이터즈', 2, 2)]
 CHAR_GAP = 1        # 음절 사이
 WORD_GAP = 7        # 낱말 사이 (빈칸 자리)
 LINE_GAP = 3
@@ -155,6 +161,8 @@ def main(argv=None):
     ap.add_argument('--preview', default=None)
     ap.add_argument('--ghost-grow', type=int, default=1,
                     help='SCR2 에서 지울 범위를 원판 로고보다 몇 px 부풀릴지')
+    ap.add_argument('--ghost-mode', choices=('외곽선만', '전부'), default='외곽선만',
+                    help='SCR2 에서 남색 외곽선만 지울지, 그 범위를 통째로 지울지')
     ap.add_argument('--max-shared-diff', type=int, default=24,
                     help='영역 안 중복 슬롯에서 허용할 어긋난 픽셀 수')
     a = ap.parse_args(argv)
@@ -224,7 +232,13 @@ def main(argv=None):
                 continue
             t = unpack(orig, ad + DELTA)
             sub = ghost[i * 8:i * 8 + 8, c * 8:c * 8 + 8]
-            t[sub] = 0
+            if a.ghost_mode == '외곽선만':
+                # SCR2 에는 일본어 외곽선과 **폭발 불꽃이 같이** 들어 있다.
+                # 전부 지우면 불꽃까지 날아가 하늘이 뻥 뚫린다 (실제로 그랬다).
+                # 글자 외곽선은 남색(색인 3)이고 불꽃은 주황·빨강이므로 남색만 지운다.
+                t[sub & (t == LINE)] = 0
+            else:
+                t[sub] = 0
             b = pack(t)
             tgt = ad + DELTA
             if tgt in w2 and w2[tgt] != b:
