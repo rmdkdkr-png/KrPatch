@@ -31,7 +31,12 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 BG, INK = 1, 2
-PPEM = 16          # Galmuri11-Bold 를 ppem 16 으로 — 잉크 약 14~15px, 16px 줄에 들어간다
+
+# 픽셀 글꼴은 **정수 배율**로만 키워야 획이 안 뭉갠다.
+# Galmuri7 은 ppem 8 에서 한글이 정확히 7x7 이므로 2배 = 14x14 로 또렷하다.
+# (Galmuri11 을 ppem 16 으로 늘리면 11->16 = 1.45배라 획이 갈라진다)
+PPEM, SCALE = 8, 2
+GAP = 2
 
 # (원문, 시작주소, 폭, 한글)
 NAMES = [
@@ -46,7 +51,7 @@ NAMES = [
     ('NAKORURU', 0x32B290, 10, '나코루루'),
     ('RYU',      0x32B3C0, 6,  '류'),
     ('CHUN-LI',  0x32B480, 9,  '춘리'),
-    ('ZANGIEF',  0x32B5A0, 9,  '장기에프'),
+    ('ZANGIEF',  0x32B5A0, 8,  '장기에프'),
     ('KEN',      0x32B6C0, 6,  '켄'),
     ('DAN',      0x32B780, 6,  '단'),
     ('SAKURA',   0x32B830, 9,  '사쿠라'),
@@ -56,34 +61,43 @@ NAMES = [
 ]
 
 
-def glyph(ch, font, ppem=PPEM):
+def glyph(ch, font, ppem=PPEM, scale=SCALE):
     f = ImageFont.truetype(font, ppem)
     im = Image.new('L', (48, 48), 0)
     ImageDraw.Draw(im).text((6, 6), ch, font=f, fill=255)
     a = np.array(im) > 127
     ys, xs = np.nonzero(a)
-    return a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    a = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    return np.kron(a, np.ones((scale, scale), bool))
 
 
-def plate_art(text, font, W, h=16, gap=1):
-    """W*8 × 16 도안. 배경은 전부 색인 1, 글자만 색인 2."""
+def plate_art(text, font, W, h=16, gap=GAP):
+    """W*8 × 16 도안. 배경은 전부 색인 1, 글자만 색인 2.
+
+    안 들어가면 자간을 먼저 줄이고, 그래도 안 되면 배율을 낮춘다.
+    **비정수 배율은 절대 안 쓴다** — 획이 갈라져 읽기 나빠진다.
+    """
     w = W * 8
-    gs = [glyph(c, font) for c in text]
-    total = sum(g.shape[1] for g in gs) + gap * (len(gs) - 1)
-    ppem = PPEM
-    while total > w - 2 and ppem > 9:          # 안 들어가면 한 단계씩 줄인다
-        ppem -= 1
-        gs = [glyph(c, font, ppem) for c in text]
-        total = sum(g.shape[1] for g in gs) + gap * (len(gs) - 1)
-    if total > w - 2:
-        raise SystemExit('%s 가 %dpx 에 안 들어간다 (%dpx 필요)' % (text, w - 2, total))
+    for scale in (SCALE, 1):
+        for g_ in (gap, 1, 0):
+            gs = [glyph(c, font, PPEM, scale) for c in text]
+            total = sum(g.shape[1] for g in gs) + g_ * (len(gs) - 1)
+            if total <= w:
+                gap = g_
+                break
+        else:
+            continue
+        break
+    else:
+        raise SystemExit('%s 가 %dpx 에 안 들어간다' % (text, w))
     gh = max(g.shape[0] for g in gs)
+    if gh > h:
+        raise SystemExit('%s 높이 %dpx 가 %dpx 를 넘는다' % (text, gh, h))
     out = np.full((h, w), BG, np.uint8)
     x = (w - total) // 2
     y = (h - gh) // 2
     for g in gs:
-        sub = out[y:y + g.shape[0], x:x + g.shape[1]]
-        sub[g] = INK
+        out[y:y + g.shape[0], x:x + g.shape[1]][g] = INK
         x += g.shape[1] + gap
     return out
 
@@ -103,7 +117,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description='SVC 이름판 한글 굽기')
     ap.add_argument('rom')
     ap.add_argument('out', nargs='?', default=None)
-    ap.add_argument('--font', default='Galmuri11-Bold.ttf')
+    ap.add_argument('--font', default='Galmuri7.ttf', help='픽셀 글꼴 (ppem 8 에서 7x7 인 것)')
     ap.add_argument('--ips', default=None)
     ap.add_argument('--sheet', default=None, help='도안 미리보기 PNG')
     a = ap.parse_args(argv)
