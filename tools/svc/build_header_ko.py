@@ -23,10 +23,11 @@
 
 ## 배치
 
-    열   0   1  2   3  4   5  6   7  8   9 10  11 12
-        [빈][ 메  ][ 인  ][ 빈  ][ 메  ][ 뉴  ][ 빈 ]
+    x    0      20     40  48     68     88    104
+        [ 메  ][ 인  ][ 빈 ][ 메  ][ 뉴  ][  빈  ]
 
-0열·6열 윗칸은 둘 다 빈 칸, 11·12열 윗칸도 둘 다 빈 칸이라 공유 제약을 만족한다.
+「메」를 x0 과 x48 에 둔다 — 0열(x0~7)과 6열(x48~55) 윗칸이 **같은 글자의 같은 부분**이라
+공유 제약을 만족한다. 「뉴」가 x87 안에서 끝나므로 11·12열 윗칸은 둘 다 빈 칸이다.
 빌더가 쓰기 전에 이 제약을 직접 검사하고, 어기면 멈춘다.
 
 글자는 16×16 한 칸씩. **Galmuri11-Bold 를 ppem 16** 으로 그린다.
@@ -38,7 +39,9 @@ Galmuri14 는 획이 1px 이라 1px 검은 외곽선에 먹혀 속이 안 보인
 띠는 8줄 두께로 왼쪽 행1~8 에서 오른쪽 행3~10 으로 기운다.
 
 글자는 원판과 같이 **행 0~11(12px)** 안에 넣는다. 12~15행은 띠 밖이라 거기까지 그리면
-글자가 띠 아래로 삐져나온다. 높이를 못 키우는 대신 **가로로 1.5배 늘려** 가독성을 얻는다.
+글자가 띠 아래로 삐져나온다. 높이를 못 키우는 대신 **가로로 정수 2배** 늘려 가독성을 얻는다.
+1.5배로 늘리면 어떤 열은 1px, 어떤 열은 2px 이 되어 획이 고르지 않다 —
+픽셀 글꼴은 정수 배율로만 늘려야 한다.
 """
 import sys, os, argparse
 import numpy as np
@@ -57,10 +60,14 @@ BANK = {                                  # 패턴 -> ROM 주소 (중복 패턴�
 }
 LINE, FILL, SHADE = 1, 2, 3   # 실측: 1=검은 외곽선, 2=노란 채움, 3=파란 그림자
 PPEM = 11                 # Galmuri11-Bold 원래 크기 — 잉크 10px
-STRETCH_X = 1.5           # 가로로만 늘린다. 띠가 12px 밖에 안 돼서 세로로는 못 키운다
+STRETCH_X = 2             # 가로만 **정수 2배**. 1.5배는 어떤 열은 1px 어떤 열은 2px 이 되어
+                          # 획이 고르지 않다. 픽셀 글꼴은 정수 배율로만 늘린다
 TEXT_ROWS = (0, 11)       # 원판 글자가 쓰는 줄. 12~15행은 띠 밖이라 비워 둔다
 RIBBON_ROWS = (2, 9)      # 띠를 평평하게 깐다 — 기울이면 0열과 6열이 달라져 공유 제약을 못 지킨다
-LAYOUT = [('메', 1), ('인', 3), ('메', 7), ('뉴', 9)]   # (글자, 시작 열) — 아래 제약 참고
+CELL = 20                 # 글자 한 칸 폭(px)
+# (글자, 시작 x). 「메」를 x0 과 x48 에 두어 0열·6열 윗칸이 같은 그림이 되게 한다.
+# 「뉴」는 x87 안에서 끝나야 11·12열 윗칸이 둘 다 빈 칸이 된다.
+LAYOUT = [('메', 0), ('인', 20), ('메', 48), ('뉴', 66)]
 
 
 def glyph(ch, font):
@@ -71,9 +78,7 @@ def glyph(ch, font):
     ys, xs = np.nonzero(a)
     a = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
     if STRETCH_X != 1:
-        w = int(round(a.shape[1] * STRETCH_X))
-        a = np.array(Image.fromarray(a.astype(np.uint8) * 255).resize(
-            (w, a.shape[0]), Image.NEAREST)) > 127
+        a = np.kron(a, np.ones((1, STRETCH_X), bool))   # 정수 배율 — 모든 열이 똑같이 늘어난다
     return a
 
 
@@ -109,11 +114,13 @@ def ribbon_mask(rom, ncol=NCOL, h=16):
 def art(font, rom, ncol=NCOL, h=16):
     w = ncol * 8
     m = np.zeros((h, w), bool)
-    for ch, col in LAYOUT:
+    for ch, px in LAYOUT:
         g = glyph(ch, font)
         gh, gw = g.shape
-        x0 = col * 8 + (16 - gw) // 2
+        x0 = px + (CELL - gw) // 2
         y0 = TEXT_ROWS[0] + (TEXT_ROWS[1] - TEXT_ROWS[0] + 1 - gh) // 2
+        if gh > TEXT_ROWS[1] - TEXT_ROWS[0] + 1:
+            raise SystemExit('%s 높이 %dpx 가 %dpx 를 넘는다' % (ch, gh, TEXT_ROWS[1] + 1))
         m[y0:y0 + gh, max(x0, 0):max(x0, 0) + gw] |= g
     out = np.zeros((h, w), np.uint8)
     out[ribbon_mask(rom, ncol, h)] = SHADE   # 파란 띠 먼저 깔고
