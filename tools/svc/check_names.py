@@ -67,21 +67,56 @@ def read_plate(rom, vram):
 
 
 def fit(cells):
-    """주소(열) = A + 열*16 의 A. 어긋나면 None."""
+    """주소(열) = A + 열*16 의 A 를 **다수결로** 고른다. (A, 지지한 칸 수, 벗어난 칸 수)
+
+    전부 한 직선에 있어야 한다고 요구했더니 판 셋을 통째로 버렸다.
+    여백 타일이 우연히 유일 매치가 되는 자리가 있어서, 그런 칸 하나가 끼면
+    멀쩡한 판도 못 풀린 것으로 나온다. 가장 많은 칸이 지지하는 A 를 쓰고
+    벗어난 칸은 세어서 돌려준다 — 벗어난 칸이 많으면 그건 진짜 이상한 판이다.
+    """
     if len(cells) < 2:
-        return None, len(cells)
-    As = {a - c * 16 for c, a in cells.items()}
-    if len(As) != 1:
-        return None, len(cells)
-    return As.pop(), len(cells)
+        return None, len(cells), 0
+    g = defaultdict(list)
+    for c, a in cells.items():
+        g[a - c * 16].append(c)
+    A, cs = max(g.items(), key=lambda t: (len(t[1]), -t[0]))
+    if len(cs) < 2:
+        return None, len(cells), 0
+    return A, len(cs), len(cells) - len(cs)
 
 
-def solve(rom, vram):
+def groups(cells):
+    """A 값별로 열을 묶는다. {A: [열, ...]}
+
+    판 하나가 **한 직선으로 안 풀리는** 경우를 버리지 않고 들여다보기 위한 것이다.
+    FELICIA 를 재 보니 한 판 안에서 기준이 중간에 한 타일 어긋나 있었다.
+    """
+    g = defaultdict(list)
+    for c, a in cells.items():
+        g[a - c * 16].append(c)
+    return {A: sorted(cs) for A, cs in g.items()}
+
+
+def diagnose(rom, vram):
+    """직선으로 안 풀리는 판을 뜯어본다. 어디서 어긋났는지 돌려준다."""
     p = read_plate(rom, vram)
-    top, nt = fit(p[PLATE_ROWS[0]])
-    bot, nb = fit(p[PLATE_ROWS[1]])
+    out = {}
+    for r in PLATE_ROWS:
+        g = groups(p[r])
+        # 유일매치가 하나뿐인 A 는 우연히 유일해진 여백일 수 있으니 표시만 해 둔다
+        out[r] = sorted(((A, cs) for A, cs in g.items()),
+                        key=lambda t: (-len(t[1]), t[0]))
+    return out
+
+
+def solve(rom, vram, max_outlier=2):
+    p = read_plate(rom, vram)
+    top, nt, ot = fit(p[PLATE_ROWS[0]])
+    bot, nb, ob = fit(p[PLATE_ROWS[1]])
     if top is None or bot is None:
         return None
+    if ot + ob > max_outlier:
+        return None            # 벗어난 칸이 많다 — 판 안에서 기준이 갈린 진짜 이상한 판
     W, rem = divmod(bot - top, 16)
     if rem or not (1 <= W <= 16):
         return None
@@ -93,7 +128,15 @@ def solve(rom, vram):
             'first': min(p[PLATE_ROWS[0]])}
 
 
-def sweep(rom_path, rom, core, boot, enter):
+def sweep(rom_path, rom, core, boot, enter, dry=160, cap=3000, verbose=False):
+    """커서를 몰고 다니며 이름판을 모은다. **새 판이 안 나올 때까지** 돈다.
+
+    고정 경로(아래 9번 × 오른쪽 …)로는 5종을 못 만났다. 캐릭터 칸이 좌우 두 무리로
+    갈려 있고 아래쪽에 따로 한 줄이 더 있어서, 격자 모양을 미리 안다고 가정하면 빠진다.
+
+    그래서 모양을 가정하지 않는다. 네 방향을 길이를 바꿔 가며 훑되,
+    **새 판이 `dry` 번 연속으로 안 나오면** 다 돌았다고 보고 멈춘다.
+    """
     from observe import make_harness
     n = make_harness(rom_path, core)
     n.run(boot)
@@ -106,28 +149,51 @@ def sweep(rom_path, rom, core, boot, enter):
         n.press('left', 6); n.run(6)
     n.run(30)
 
-    moves = [None]
-    for _ in range(10):
-        for _ in range(9):
-            moves += ['down', None]
-        moves += ['right', None]
-    for _ in range(6):
-        for _ in range(9):
-            moves += ['up', None]
-        moves += ['left', None]
-
     found = {}
-    for mv in moves:
-        if mv:
-            n.press(mv, 6); n.run(14)
-            continue
-        r = solve(rom, TM.dump_vram(n))
+    odd = {}
+    since = steps = 0
+
+    def look():
+        nonlocal since
+        v = TM.dump_vram(n)
+        r = solve(rom, v)
         if r is None:
-            continue
+            since += 1
+            # 직선으로 안 풀린 판은 버리지 않고 모아 둔다 — 여기가 보류 4종의 단서다
+            d = diagnose(rom, v)
+            best = max((A for row in d.values() for A, cs in row if len(cs) >= 2),
+                       default=None)
+            if best is not None:
+                key = min(A for row in d.values() for A, cs in row if len(cs) >= 2)
+                if key not in odd:
+                    odd[key] = d
+            return
         prev = found.get(r['top'])
-        if prev is None or r['matched'] > prev['matched']:
+        if prev is None:
+            since = 0
             found[r['top']] = r
-    return found
+            if verbose:
+                print('   %d걸음: 새 판 0x%06X W%d' % (steps, r['top'], r['W']))
+        else:
+            since += 1
+            if r['matched'] > prev['matched']:
+                found[r['top']] = r
+
+    look()
+    # 길이를 바꿔 가며 네 방향을 도는 결정적 순회. 좌우 무리와 아래 줄을 모두 지난다.
+    plan = []
+    for run in (1, 2, 3, 5, 8, 13):
+        for d in ('down', 'right', 'up', 'right', 'down', 'left', 'up', 'left'):
+            plan += [d] * run
+    while since < dry and steps < cap:
+        for mv in plan:
+            n.press(mv, 6)
+            n.run(14)
+            steps += 1
+            look()
+            if since >= dry or steps >= cap:
+                break
+    return found, odd
 
 
 def main(argv=None):
@@ -137,18 +203,32 @@ def main(argv=None):
     ap.add_argument('--boot', type=int, default=1300)
     ap.add_argument('--enter', type=int, default=5)
     ap.add_argument('--table', default=os.path.join(HERE, 'names_table.json'))
+    ap.add_argument('--dry', type=int, default=160,
+                    help='새 판이 이만큼 연속으로 안 나오면 다 돈 것으로 본다')
+    ap.add_argument('--cap', type=int, default=3000, help='최대 커서 이동 수')
+    ap.add_argument('--verbose', action='store_true')
     ap.add_argument('--dump', action='store_true', help='측정값만 출력하고 대조는 안 한다')
     a = ap.parse_args(argv)
 
     with open(a.rom, 'rb') as f:
         rom = f.read()
-    found = sweep(a.rom, rom, a.core, a.boot, a.enter)
+    found, odd = sweep(a.rom, rom, a.core, a.boot, a.enter, a.dry, a.cap, a.verbose)
 
     print('화면에서 잰 이름판 %d개' % len(found))
     print('  %-10s %-4s %-8s %s' % ('윗줄A', 'W', '유일매치', '가장왼쪽 매치'))
     for A in sorted(found):
         r = found[A]
         print('  0x%06X  %-3d  %-7d  x%d' % (A, r['W'], r['matched'], r['first']))
+
+    if odd:
+        print('\n직선 하나로 안 풀린 판 %d개 — **한 판 안에서 기준이 어긋난다**' % len(odd))
+        for key in sorted(odd):
+            print('  0x%06X 근처' % key)
+            for r in PLATE_ROWS:
+                for A, cs in odd[key][r]:
+                    if len(cs) < 2:
+                        continue
+                    print('     행%d  A=0x%06X  열 %s' % (r, A, cs))
 
     if a.dump or not os.path.exists(a.table):
         if not a.dump:

@@ -194,6 +194,17 @@ class NGP:
         self.lib.retro_dbg_peek_block(C.c_uint32(addr), C.c_uint32(length), buf)
         return buf.raw
 
+    def poke(self, addr, data):
+        """RAM 에 직접 쓴다 (코어 패치의 retro_dbg_poke).
+
+        세이브 없이 잠긴 상태를 넘겨다볼 때 쓴다 — 예를 들어 캐릭터 선택 커서 변수를
+        밀어 넣으면 콜드부트에서 커서가 못 닿는 칸도 화면에 띄울 수 있다.
+        """
+        if isinstance(data, int):
+            data = bytes([data])
+        for i, b in enumerate(data):
+            self.lib.retro_dbg_poke(C.c_uint32(addr + i), C.c_uint8(b))
+
 
 if __name__ == '__main__':
     import sys
