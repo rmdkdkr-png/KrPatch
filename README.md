@@ -67,6 +67,7 @@ MD5가 다르면 원본 ROM이 다른 것입니다.
 | **SNK vs Capcom: Match of the Millennium** | v0.18 | [릴리즈](https://github.com/rmdkdkr-png/KrPatch/releases/tag/SVC) |
 | **사무라이 쇼다운!** (NGP) | v0.19 | [릴리즈](https://github.com/rmdkdkr-png/KrPatch/releases/tag/ss1-v0.19) |
 | **월화의 검사 특별편** | v0.22 | [릴리즈](https://github.com/rmdkdkr-png/KrPatch/releases/tag/lastblade-v0.22) |
+| **더 킹 오브 파이터즈 R-2** | v0.2 | [릴리즈](https://github.com/rmdkdkr-png/KrPatch/releases/tag/kofr2-v0.2) |
 
 ## 번역 범위
 
