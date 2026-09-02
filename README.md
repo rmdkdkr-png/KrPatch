@@ -12,7 +12,7 @@
 | 사무라이 스피리츠! 2 | v0.99b3 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/v0.99b3) |
 | 사무라이 스피리츠! | v0.19 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/ss1-v0.19) |
 | 월화의 검사 특별편 | v2.2 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/lastblade-v2.2) |
-| 더 킹 오브 파이터즈 R-2 | v0.2 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/kofr2-v0.2) |
+| 더 킹 오브 파이터즈 R-2 | v0.2.1 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/kofr2-v0.2.1) |
 | 아랑전설 퍼스트 컨택트 | v0.1a | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/ffc-v0.1a) |
 | 메탈슬러그 1st 미션 | v0.1 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/ms1-v0.1) |
 
