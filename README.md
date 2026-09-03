@@ -8,8 +8,8 @@
 
 | 게임 | 판 | 받기 |
 |---|---|---|
-| SNK vs. Capcom — 정상결전 최강 파이터즈 | v0.18 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/SVC) |
-| 사무라이 스피리츠! 2 | v0.99b3 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/v0.99b3) |
+| SNK vs. Capcom — 정상결전 최강 파이터즈 | v0.19 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/SVC) |
+| 사무라이 스피리츠! 2 | v0.99b4 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/v0.99b4) |
 | 사무라이 스피리츠! | v0.19 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/ss1-v0.19) |
 | 월화의 검사 특별편 | v2.3 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/lastblade-v2.3) |
 | 더 킹 오브 파이터즈 R-2 | v0.2.2 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/kofr2-v0.2.2) |
