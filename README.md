@@ -13,6 +13,7 @@
 | <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/lb.png" width="160" alt="월화의 검사 특별편"> | 월화의 검사 특별편 | v2.3 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/lastblade-v2.3) |
 | <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/kofr2.png" width="160" alt="더 킹 오브 파이터즈 R-2"> | 더 킹 오브 파이터즈 R-2 | v0.2.3 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/kofr2-v0.2.3) |
 | <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/ffc.png" width="160" alt="아랑전설 퍼스트 컨택트"> | 아랑전설 퍼스트 컨택트 | v0.1a | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/ffc-v0.1a) |
+| <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/cfc1.png" width="160" alt="SNK vs. 캡콤 카드 파이터즈 클래시"> | SNK vs. 캡콤 카드 파이터즈 클래시 | v0.11 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/cfc1-v0.11) |
 | <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/ms1.png" width="160" alt="메탈슬러그 1st 미션"> | 메탈슬러그 1st 미션 | v0.1 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/ms1-v0.1) |
 | <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/ms2.png" width="160" alt="메탈슬러그 2nd 미션"> | 메탈슬러그 2nd 미션 | v0.7 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/ms2-v0.7) |
 
