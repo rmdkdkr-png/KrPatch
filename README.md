@@ -1,8 +1,7 @@
 <!-- GATE:BEGIN -->
 # 네오지오 포켓 컬러 — 한글패치 대문
 
-이 저장소는 **한글패치(IPS)의 집**입니다. 아래 표에서 게임별 최신판을 받거나,
-[**PocketCore 앱**](https://github.com/rmdkdkr-png/PocketCore/releases/tag/app)으로 전부 자동 적용하세요.
+이 저장소는 **한글패치(IPS)의 집**입니다. 아래 표에서 게임별 최신판을 받으세요.
 
 ## 한글패치 최신판 (에뮬레이터·실기 공용)
 
@@ -18,10 +17,11 @@
 | <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/ms2.png" width="160" alt="메탈슬러그 2nd 미션"> | 메탈슬러그 2nd 미션 | v0.7 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/ms2-v0.7) |
 
 IPS 는 [Lunar IPS](https://www.romhacking.net/utilities/240/) 등으로 직접 입힙니다.
-해시·적용법은 각 릴리즈 본문에 있습니다. 최근 무엇이 바뀌었는지는 앱의 소식창이나
-[앱 릴리즈 본문](https://github.com/rmdkdkr-png/PocketCore/releases/tag/app)에서 봅니다.
+해시·적용법은 각 릴리즈 본문에 있습니다.
 
 제작 규칙은 [RELEASE_RULES.md](RELEASE_RULES.md) — 상세 문서는 아래 링크.
+
+<sub>안드로이드에서 이 패치들을 자동으로 입혀 주는 앱을 따로 만들고 있습니다 — [PocketCore](https://github.com/rmdkdkr-png/PocketCore/releases/tag/app). 아직 다듬는 중입니다.</sub>
 
 ---
 <!-- GATE:END -->
