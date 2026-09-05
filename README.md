@@ -8,7 +8,7 @@
 | | 게임 | 판 | 받기 |
 |---|---|---|---|
 | <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/svc.png" width="160" alt="SNK vs. Capcom — 정상결전 최강 파이터즈"> | SNK vs. Capcom — 정상결전 최강 파이터즈 | v0.19 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/SVC) |
-| <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/ss2.png" width="160" alt="사무라이 쇼다운! 2"> | 사무라이 쇼다운! 2 | v0.99b4 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/v0.99b4) |
+| <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/ss2.png" width="160" alt="사무라이 쇼다운! 2"> | 사무라이 쇼다운! 2 | v1.0 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/v1.0) |
 | <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/ss1.png" width="160" alt="사무라이 쇼다운!"> | 사무라이 쇼다운! | v0.19 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/ss1-v0.19) |
 | <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/lb.png" width="160" alt="월화의 검사 특별편"> | 월화의 검사 특별편 | v2.3 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/lastblade-v2.3) |
 | <img src="https://raw.githubusercontent.com/rmdkdkr-png/KrPatch/main/docs/gate/kofr2.png" width="160" alt="더 킹 오브 파이터즈 R-2"> | 더 킹 오브 파이터즈 R-2 | v0.2.4 | [받기](https://github.com/rmdkdkr-png/KrPatch/releases/tag/kofr2-v0.2.4) |
