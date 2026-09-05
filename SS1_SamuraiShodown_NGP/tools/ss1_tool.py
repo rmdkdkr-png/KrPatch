@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ss1_tool.py — 사무라이 스피리츠!(NGP) 한글화 작업 도구
+"""ss1_tool.py — 사무라이 쇼다운!(NGP) 한글화 작업 도구
 
 기능:
   dump   <rom> [out.tsv]        스크립트 덤프 (주소 / 바이트 / 원문)
